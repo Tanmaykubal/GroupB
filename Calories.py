@@ -42,7 +42,19 @@ def run():
                 total_protein = (food_protein * quantity) / 100
                 total_carbs = (food_carbs * quantity) / 100
                 total_fat = (food_fat * quantity) / 100
-                
+                # Check if the food already exists for the selected date
+            existing_entry = next(
+                (entry for entry in st.session_state.calorie_data if entry["Date"] == date and entry["Food"] == food), None
+            )
+
+            if existing_entry:
+                # Update the existing entry instead of adding a new one
+                existing_entry["Calories"] = total_calories
+                existing_entry["Protein"] = total_protein
+                existing_entry["Carbs"] = total_carbs
+                existing_entry["Fat"] = total_fat
+            else:
+                # Add a new entry if it doesn't exist
                 st.session_state.calorie_data.append({
                     "Date": date, "Food": food, "Calories": total_calories,
                     "Protein": total_protein, "Carbs": total_carbs, "Fat": total_fat
@@ -96,6 +108,36 @@ def run():
             st.dataframe(nutrient_df)
         else:
             st.warning(f"No data available for {past_date}")
+    else:
+        st.warning("The 'Date' column is missing from the food log.")
+    # 7-Day Average Calculation
+if len(df_summary) >= 7:
+    if st.button("Show 7-Day Average"):
+        last_7_days = df_summary.tail(7)
+        avg_calories = last_7_days["Calories"].mean()
+        avg_protein = last_7_days["Protein"].mean()
+        avg_carbs = last_7_days["Carbs"].mean()
+        avg_fat = last_7_days["Fat"].mean()
+
+        avg_df = pd.DataFrame({
+            "Nutrient": ["Calories", "Protein", "Carbs", "Fat"],
+            "7-Day Average": [avg_calories, avg_protein, avg_carbs, avg_fat]
+        })
+
+        st.write("### 7-Day Average Nutrient Intake")
+        st.dataframe(avg_df)
+
+    # Perform One-Sample t-test only if there are at least 7 data points
+    if len(df_summary) >= 7:
+        # Perform one-sample t-test
+        t_stat, p_value = stats.ttest_1samp(df_summary["Calories"].tail(7), target_calories)
+
+        if p_value < 0.05:
+            # Statistically significant result
+            st.write("### Result: You’re not eating the right amount of calories—you’re either consuming too much or too little compared to your goal.")
+        else:
+            # Not statistically significant
+            st.write("### Result: You are on the right track. Your calorie intake is not significantly different from your target.")
 
 if __name__ == "__main__":
     run()
