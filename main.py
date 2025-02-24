@@ -10,6 +10,7 @@ st.set_page_config(
     layout="wide"
 )
 
+
 # Sidebar customization with new labels
 st.sidebar.markdown("<h2 style='text-align: center;'>Navigation</h2>", unsafe_allow_html=True)
 page = st.sidebar.radio(
