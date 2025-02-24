@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+from scipy import stats
 
 def run():
     st.markdown("<h1 style='color:#e67e22;'>Calorie Intake Tracker</h1>", unsafe_allow_html=True)
@@ -42,6 +43,7 @@ def run():
                 total_protein = (food_protein * quantity) / 100
                 total_carbs = (food_carbs * quantity) / 100
                 total_fat = (food_fat * quantity) / 100
+                
                 # Check if the food already exists for the selected date
             existing_entry = next(
                 (entry for entry in st.session_state.calorie_data if entry["Date"] == date and entry["Food"] == food), None
@@ -59,6 +61,7 @@ def run():
                     "Date": date, "Food": food, "Calories": total_calories,
                     "Protein": total_protein, "Carbs": total_carbs, "Fat": total_fat
                 })
+
     
     df_log = pd.DataFrame(st.session_state.calorie_data)
     if not df_log.empty:
@@ -111,8 +114,8 @@ def run():
     else:
         st.warning("The 'Date' column is missing from the food log.")
     # 7-Day Average Calculation
-if len(df_summary) >= 7:
-    if st.button("Show 7-Day Average"):
+    if len(df_summary) >= 7:
+       if st.button("Show 7-Day Average"):
         last_7_days = df_summary.tail(7)
         avg_calories = last_7_days["Calories"].mean()
         avg_protein = last_7_days["Protein"].mean()
@@ -138,6 +141,9 @@ if len(df_summary) >= 7:
         else:
             # Not statistically significant
             st.write("### Result: You are on the right track. Your calorie intake is not significantly different from your target.")
+
+    
+
 
 if __name__ == "__main__":
     run()
